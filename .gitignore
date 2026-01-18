@@ -1,0 +1,4 @@
+node_modules/
+dist/
+tests/fixtures/test_v1
+tests/fixtures/test_v2
