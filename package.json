@@ -14,7 +14,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "description": "MCP server for binary analysis and comparison using GNU binutils",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.2",
