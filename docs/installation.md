@@ -1,83 +1,70 @@
 # Installation
 
-## Requirements
+bindiff-mcp needs Node.js 20 or newer and GNU binutils (`nm`, `objdump`, `readelf`, `size`) on `PATH`.
 
-- Node.js 20 or later
-- GNU binutils (nm, objdump, readelf, size)
+## GNU binutils
 
-## Installing GNU binutils
+Debian or Ubuntu (also inside WSL):
 
-bindiff-mcp requires GNU binutils to be installed and available in your PATH.
-
-### Windows
-
-**Option 1: MSYS2 (recommended)**
-
-1. Install [MSYS2](https://www.msys2.org/)
-2. Open MSYS2 terminal and run:
-   ```bash
-   pacman -S binutils
-   ```
-3. Add MSYS2's bin directory to your PATH (usually `C:\msys64\usr\bin`)
-
-**Option 2: Git Bash**
-
-Git Bash includes basic binutils. If you have Git for Windows installed, the tools may already be available.
-
-**Option 3: WSL**
-
-If you use Windows Subsystem for Linux:
 ```bash
 sudo apt install binutils
 ```
 
-### macOS
+Fedora:
 
-Using Homebrew:
-```bash
-brew install binutils
-```
-
-Note: Homebrew installs binutils with a `g` prefix (e.g., `gnm`, `gobjdump`). You may need to either:
-- Add the unprefixed versions to your PATH: `export PATH="/opt/homebrew/opt/binutils/bin:$PATH"`
-- Or set the toolchain prefix: `BINDIFF_TOOLCHAIN_PREFIX=g`
-
-### Linux
-
-**Debian/Ubuntu:**
-```bash
-sudo apt install binutils
-```
-
-**Fedora/RHEL:**
 ```bash
 sudo dnf install binutils
 ```
 
-**Arch Linux:**
+Arch Linux:
+
 ```bash
 sudo pacman -S binutils
 ```
 
-## Installing bindiff-mcp
-
-### From source
+macOS with Homebrew:
 
 ```bash
-git clone <repository-url>
+brew install binutils
+export PATH="$(brew --prefix binutils)/bin:$PATH"
+```
+
+Homebrew installs binutils keg-only, so the tools are not linked onto `PATH`. Without the `export`, the server finds the Xcode command line tools' `nm` and `objdump` instead, and there is no `readelf` at all. Put the `export` in your shell profile, or set `PATH` in the client's server config.
+
+Windows with [MSYS2](https://www.msys2.org/): in an MSYS2 shell run `pacman -S binutils`, then add the MSYS2 `usr\bin` directory (`C:\msys64\usr\bin` in a default install) to `PATH`.
+
+Check that all four are found:
+
+```bash
+nm --version && objdump --version && readelf --version && size --version
+```
+
+## Cross toolchains
+
+To disassemble binaries built for another architecture, install binutils for that target and set `BINDIFF_TOOLCHAIN_PREFIX` (see [configuration.md](configuration.md)). For AArch64 on Debian or Ubuntu:
+
+```bash
+sudo apt install binutils-aarch64-linux-gnu
+aarch64-linux-gnu-objdump --version
+```
+
+## bindiff-mcp
+
+```bash
+git clone https://github.com/Abdalla-Eldoumani/bindiff-mcp.git
 cd bindiff-mcp
 npm install
 npm run build
 ```
 
-### Verify installation
+Start it once by hand to check that it finds binutils:
 
-After building, run:
 ```bash
 npm start
 ```
 
-You should see output like:
+The output ends with:
+
 ```
 [bindiff-mcp] Starting bindiff-mcp v1.0.0
 [bindiff-mcp] Checking binutils availability...
@@ -86,26 +73,4 @@ You should see output like:
 [bindiff-mcp] Server connected and ready
 ```
 
-If any tools are missing, you'll see a warning listing which ones need to be installed.
-
-## Cross-compilation toolchains
-
-To analyze binaries for different architectures (e.g., ARM64 binaries on an x86 machine), install a cross-compilation toolchain.
-
-**Example: ARM64 toolchain on Ubuntu**
-```bash
-sudo apt install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
-```
-
-Then set the toolchain prefix:
-```bash
-export BINDIFF_TOOLCHAIN_PREFIX=aarch64-linux-gnu-
-```
-
-This tells bindiff-mcp to use `aarch64-linux-gnu-nm` instead of `nm`, etc.
-
-## Next steps
-
-- [Configuration](configuration.md) - Set up bindiff-mcp with Claude Desktop or Claude Code
-- [Tools Reference](tools.md) - Learn about available tools
-- [Examples](examples.md) - See practical usage examples
+A missing tool shows up as a `Warning: Missing tools` line. The server then waits for an MCP client on stdin; press Ctrl+C to stop it and [register it with your client](configuration.md).
